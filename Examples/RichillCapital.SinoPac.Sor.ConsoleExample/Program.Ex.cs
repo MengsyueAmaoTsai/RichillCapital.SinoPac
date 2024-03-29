@@ -305,7 +305,7 @@
 //         {
 //             Console.WriteLine("{0}: [{1}] 改密碼: {2}", DateTime.Now, user, string.IsNullOrEmpty(result) ? "成功" : ("失敗: " + result));
 //         }
-        
+
 //         /// <summary>
 //         /// 執行指定作業回覆
 //         /// </summary>

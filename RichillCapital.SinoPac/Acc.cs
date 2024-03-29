@@ -75,15 +75,15 @@ public class Acc
     /// <summary>
     /// 投資人所屬券商代號.
     /// </summary>
-    public string BrkNo { get { return BrkNo_; } }
+    public string BrokerageNumber { get { return BrkNo_; } }
     /// <summary>
     /// 投資人帳號.
     /// </summary>
-    public string IvacNo { get { return IvacNo_; } }
+    public string Number { get { return IvacNo_; } }
     /// <summary>
     /// 子帳號.
     /// </summary>
-    public string SubacNo { get { return SubacNo_; } }
+    public string SubAccountNumber { get { return SubacNo_; } }
     /// <summary>
     /// 帳號Key: "BrkNo-IvacNo" 或 "BrkNo-IvacNo-SubacNo"
     /// </summary>
@@ -123,5 +123,5 @@ public class Acc
         return DigSgnHandler_.MakeDigSgn(ref msg, iDigSgnAtMsgPos);
     }
 
-    public bool IsSubAccount() => !string.IsNullOrEmpty(SubacNo);
+    public bool IsSubAccount() => !string.IsNullOrEmpty(SubAccountNumber);
 }
