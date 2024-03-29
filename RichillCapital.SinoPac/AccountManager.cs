@@ -64,7 +64,7 @@ public class AccountManager
                     continue;
                 int imkt;
                 int.TryParse(mkt, out imkt);
-                acc = new SorAccount((SorMktFlags)imkt, acno, name);
+                acc = new SorAccount((SorMarketFlag)imkt, acno, name);
                 Add(acc, caDLLName, table.RecordField(L, fldCert), sgnact);
             }
         }
@@ -86,7 +86,7 @@ public class AccountManager
                     continue;
                 int imkt;
                 int.TryParse(mkt, out imkt);
-                acc = new SorAccount((SorMktFlags)imkt, bhno, ivac, suba, name);
+                acc = new SorAccount((SorMarketFlag)imkt, bhno, ivac, suba, name);
                 Add(acc, caDLLName, table.RecordField(L, fldCert), sgnact);
             }
         }

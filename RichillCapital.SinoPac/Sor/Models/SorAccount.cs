@@ -2,7 +2,7 @@ namespace RichillCapital.SinoPac.Sor.Models;
 
 public class SorAccount
 {
-    SorMktFlags Mkt_;
+    SorMarketFlag Mkt_;
     string Acno_;
     string Name_;
     string DispText_;
@@ -11,7 +11,7 @@ public class SorAccount
     string SubacNo_;
     DigSgnHandler DigSgnHandler_;
 
-    private void Init(SorMktFlags mkt, string brkno, string ivacno, string subacno, string name)
+    private void Init(SorMarketFlag mkt, string brkno, string ivacno, string subacno, string name)
     {
         Mkt_ = mkt;
         Name_ = string.IsNullOrEmpty(name) ? string.Empty : name;
@@ -21,17 +21,17 @@ public class SorAccount
         Acno_ = MakeAcno(BrkNo_, IvacNo_, SubacNo_);
 
         DispText_ = string.Empty;
-        if ((int)(Mkt_ & SorMktFlags.TwStk) != 0)
+        if ((int)(Mkt_ & SorMarketFlag.TwStk) != 0)
             DispText_ += "證";
-        if ((int)(Mkt_ & SorMktFlags.TwFuo) != 0)
+        if ((int)(Mkt_ & SorMarketFlag.TwFuo) != 0)
             DispText_ += "期";
-        if ((int)(Mkt_ & SorMktFlags.FrStk) != 0)
+        if ((int)(Mkt_ & SorMarketFlag.FrStk) != 0)
             DispText_ += "複";
-        if ((int)(Mkt_ & SorMktFlags.FrFuo) != 0)
+        if ((int)(Mkt_ & SorMarketFlag.FrFuo) != 0)
             DispText_ += "外";
-        if ((int)(Mkt_ & SorMktFlags.TwfQuot) != 0)
+        if ((int)(Mkt_ & SorMarketFlag.TwfQuot) != 0)
             DispText_ += "報";
-        if ((int)(Mkt_ & SorMktFlags.CnFuo) != 0)
+        if ((int)(Mkt_ & SorMarketFlag.CnFuo) != 0)
             DispText_ += "Cf";
         DispText_ += string.Format("-{0}-{1}", Acno_, Name_);
     }
@@ -48,7 +48,7 @@ public class SorAccount
     /// <summary>
     /// 建構, acno 格式為 "brkNo-ivacNo-subacNo" 或 "brkNo-ivacNo".
     /// </summary>
-    public SorAccount(SorMktFlags mkt, string acno, string name)
+    public SorAccount(SorMarketFlag mkt, string acno, string name)
     {
         string[] acs = acno.Split('-');
         Init(mkt, acs.Length > 0 ? acs[0] : null, acs.Length > 1 ? acs[1] : null, acs.Length > 2 ? acs[2] : null, name);
@@ -56,7 +56,7 @@ public class SorAccount
     /// <summary>
     /// 建構.
     /// </summary>
-    public SorAccount(SorMktFlags mkt, string brkNo, string ivacNo, string subacNo, string name)
+    public SorAccount(SorMarketFlag mkt, string brkNo, string ivacNo, string subacNo, string name)
     {
         Init(mkt, brkNo, ivacNo, subacNo, name);
     }
@@ -71,7 +71,7 @@ public class SorAccount
     /// <summary>
     /// 可交易市場旗標.
     /// </summary>
-    public SorMktFlags MktFlag { get { return Mkt_; } }
+    public SorMarketFlag MktFlag { get { return Mkt_; } }
     /// <summary>
     /// 投資人所屬券商代號.
     /// </summary>

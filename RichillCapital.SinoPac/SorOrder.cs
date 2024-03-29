@@ -2,17 +2,20 @@ using RichillCapital.SinoPac.Sor.Models;
 
 namespace RichillCapital.SinoPac.Sor;
 
-public class SinoPacSorOrder
+public sealed class SorOrder
 {
     OrdTable Table_;
+
     string[] SorValues_;
+
     List<string[]> DealDetails_ = new List<string[]>();
+
     SorAccount Acc_;
 
     /// 利用委託欄位 SorValues_ 取得此筆委託的帳號.
-    void RegetAcc(AccountManager accs)
+    void RegetAcc(AccountManager accountManager)
     {
-        if (accs == null)
+        if (accountManager == null)
             return;
         int fldCount = SorValues_.Length;
         if (Table_.IBrkNo >= fldCount)
@@ -26,13 +29,11 @@ public class SinoPacSorOrder
             if (!string.IsNullOrEmpty(subac))
                 acno += "-" + subac;
         }
-        accs.TryGetValue(acno, out Acc_);
+        accountManager.TryGetValue(acno, out Acc_);
     }
 
-    /// <summary>
     /// 建構.
-    /// </summary>
-    public SinoPacSorOrder(OrdTable table, string[] values, AccountManager accs)
+    public SorOrder(OrdTable table, string[] values, AccountManager accs)
     {
         Table_ = table;
         if (values == null)
@@ -41,23 +42,17 @@ public class SinoPacSorOrder
         RegetAcc(accs);
     }
 
-    /// <summary>
     /// 設定委託回補欄位內容.
-    /// </summary>
     public void SetSorOrdFields(string[] values)
     {
         if (values != null)
             SorValues_ = values;
     }
 
-    /// <summary>
     /// 委託書內容值清單
-    /// </summary>
     public string[] Values { get { return SorValues_; } }
 
-    /// <summary>
     /// 依欄位名稱取得委託書內容值
-    /// </summary>
     public string this[string fieldName]
     {
         get
@@ -69,9 +64,7 @@ public class SinoPacSorOrder
         }
     }
 
-    /// <summary>
     /// 回報更新委託內容, 如果是成交回報,則可能會加入成交明細表.
-    /// </summary>
     public void SetRptFields(RptTable rptTable, string[] rptFlds, AccountManager accs)
     {
         SorTable sorTable;
@@ -109,25 +102,19 @@ public class SinoPacSorOrder
             RegetAcc(accs);
     }
 
-    /// <summary>
     /// 增加一筆成交明細回補.
-    /// </summary>
     public void AddDealDetail(string[] flds)
     {
         DealDetails_.Add(flds);
     }
 
-    /// <summary>
     /// 取得此筆委託Key.
-    /// </summary>
     public string OrgSorRID
     {
         get { return Table_.GetOrgSorRID(SorValues_); }
     }
 
-    /// <summary>
     /// 取得此筆委託改單Key.
-    /// </summary>
     public string AmendKey
     {
         get
@@ -138,18 +125,12 @@ public class SinoPacSorOrder
         }
     }
 
-    /// <summary>
     /// 取得此筆委託的剩餘量.
-    /// </summary>
-    public string LeavesQty { get { return OrdTable.GetValue(SorValues_, Table_.ILeavesQty); } }
+    public string RemainingQuantity => OrdTable.GetValue(SorValues_, Table_.ILeavesQty);
 
-    /// <summary>
     /// 此委託所屬的委託表.
-    /// </summary>
     public OrdTable Table { get { return Table_; } }
 
-    /// <summary>
     /// 此委託所屬的可用帳號.
-    /// </summary>
-    public SorAccount Acc { get { return Acc_; } }
+    public SorAccount Account { get { return Acc_; } }
 }

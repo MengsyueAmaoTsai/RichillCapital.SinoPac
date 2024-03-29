@@ -4,7 +4,7 @@ namespace RichillCapital.SinoPac.Sor;
 
 
 /// [委託表格/回報表格] 管理.
-public class TablesMgr
+public class TableManager
 {
     SortedList<string, RptTable> RptTables_ = new SortedList<string, RptTable>();
     SortedList<string, OrdTable> OrdTables_ = new SortedList<string, OrdTable>();
@@ -91,7 +91,7 @@ public class TablesMgr
         // 設定委託刪單要求表.
         foreach (OrdTable ordTab in OrdTables_.Values)
         {
-            SorMktFlags mktflags = ordTab.SorTable.MktFlag;
+            SorMarketFlag mktflags = ordTab.SorTable.MktFlag;
             foreach (ReqKillTable reqk in reqKillTables)
                 if ((uint)(mktflags & reqk.MktFlag) != 0)
                 {

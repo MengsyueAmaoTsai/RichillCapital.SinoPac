@@ -1,6 +1,6 @@
 namespace RichillCapital.SinoPac.Sor;
 
-public enum SorMktFlags
+public enum SorMarketFlag
 {
     /// 無可交易市場.
     None = 0,

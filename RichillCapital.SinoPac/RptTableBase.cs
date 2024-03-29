@@ -6,7 +6,7 @@ namespace RichillCapital.SinoPac.Sor;
 public class ReportTableBase : IComparable
 {
     SorTable Table_;
-    SorMktFlags MktFlag_;
+    SorMarketFlag MktFlag_;
 
     /// <summary>
     /// 建構
@@ -33,7 +33,7 @@ public class ReportTableBase : IComparable
     /// <summary>
     /// 市場旗標.
     /// </summary>
-    public SorMktFlags MktFlag { get { return MktFlag_; } }
+    public SorMarketFlag MktFlag { get { return MktFlag_; } }
 
 
     int IComparable.CompareTo(object obj)

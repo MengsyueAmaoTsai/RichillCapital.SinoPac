@@ -13,7 +13,7 @@ public sealed partial class SorClient : IDisposable
 
     private readonly QueryId _queryId = new();
     private readonly AccountManager _accountManager = new();
-    private readonly TablesMgr _tableManager = new();
+    private readonly TableManager _tableManager = new();
 
     public event EventHandler<SorStateChangedEvent>? StateChanged;
 

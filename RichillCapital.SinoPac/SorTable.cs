@@ -35,7 +35,7 @@ public sealed partial class SorTable
         field == null ? null : CSorTable_RecordField(ref Impl_, recordIndex, ref field.Impl_);
 
     /// 取得此表格所屬的市場別屬性, 可能有多個市場別, 請使用 bit 判斷.
-    public SorMktFlags MktFlag => CSorTable_MktFlag(ref Impl_);
+    public SorMarketFlag MktFlag => CSorTable_MktFlag(ref Impl_);
 }
 
 public sealed partial class SorTable
@@ -58,5 +58,5 @@ public sealed partial class SorTable
     private static extern string CSorTable_RecordField(ref TImpl impl, uint recordIndex, ref TImpl fieldImpl);
 
     [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorTable_MktFlag")]
-    private static extern SorMktFlags CSorTable_MktFlag(ref TImpl impl);
+    private static extern SorMarketFlag CSorTable_MktFlag(ref TImpl impl);
 }

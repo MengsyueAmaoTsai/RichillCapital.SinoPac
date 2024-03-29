@@ -5,7 +5,7 @@ namespace RichillCapital.SinoPac.Sor;
 /// 刪單要求表.
 public class ReqKillTable
 {
-    SorMktFlags MktFlag_;
+    SorMarketFlag MktFlag_;
     uint IdxFldAmendKey_;
     uint IdxFldOrgSorRID_;
     uint IdxDigSgn_;
@@ -50,18 +50,18 @@ public class ReqKillTable
 
     /// 此刪單表可操作的市場.
 
-    public SorMktFlags MktFlag { get { return MktFlag_; } }
+    public SorMarketFlag MktFlag { get { return MktFlag_; } }
 
 
     /// 建立委託刪單要求字串.
 
-    public string MakeKillReqStr(SinoPacSorOrder ord, out string errMsg)
+    public string MakeKillReqStr(SorOrder ord, out string errMsg)
     {
         if (IdxFldAmendKey_ != SorField.InvalidIndex)
             ReqFlds_[IdxFldAmendKey_] = ord.AmendKey;
         if (IdxFldOrgSorRID_ != SorField.InvalidIndex)
             ReqFlds_[IdxFldOrgSorRID_] = ord.OrgSorRID;
-        return OrdTable.MakeRequestString(ReqFlds_, TableID_, ord.Acc, IdxDigSgn_, out errMsg);
+        return OrdTable.MakeRequestString(ReqFlds_, TableID_, ord.Account, IdxDigSgn_, out errMsg);
     }
 }
 #endregion
