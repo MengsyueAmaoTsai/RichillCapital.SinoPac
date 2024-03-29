@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using RichillCapital.SharedKernel.Monads;
 using RichillCapital.SinoPac.Sor.Events;
+using RichillCapital.SinoPac.Sor.Models;
 
 namespace RichillCapital.SinoPac.Sor;
 
@@ -58,9 +59,9 @@ public sealed partial class SorClient : IDisposable
         return Result.Success;
     }
 
-    public IReadOnlyCollection<Acc> GetAccounts() => _accountManager.Values.AsReadOnly();
+    public IReadOnlyCollection<SorAccount> GetAccounts() => _accountManager.Values.AsReadOnly();
 
-    public void QueryAccountBalance(Acc sorAccount, string currencyCode = "NTX")
+    public void QueryAccountBalance(SorAccount sorAccount, string currencyCode = "NTX")
     {
         var taskId = "QBal";
 
@@ -83,7 +84,7 @@ public sealed partial class SorClient : IDisposable
         SendRequest(0x80, request);
     }
 
-    public void QueryAccountPositions(Acc sorAccount, bool isSummary = true)
+    public void QueryAccountPositions(SorAccount sorAccount, bool isSummary = true)
     {
         var taskId = "QINV";
 
@@ -135,11 +136,11 @@ public sealed partial class SorClient : IDisposable
         Console.WriteLine("\n[OnSorApReadyCallback]");
         Console.WriteLine($"State = {State}");
 
-        var result = GetSignInResult();
+        var signInResult = GetSignInResult();
 
-        LoadAccounts(result);
-        SetRateLimit();
-        LoadTables(result);
+        LoadAccounts(signInResult);
+        SetRateLimit(signInResult);
+        LoadTables(signInResult);
         RecoverExecutions();
     }
 
@@ -182,34 +183,13 @@ public sealed partial class SorClient : IDisposable
         }
     }
 
-    private void SetRateLimit()
+    private void SetRateLimit(TaskResult signInResult)
     {
-        //             table = sgnResult.NameTable("FlowCtrl");
-        //             SorFields fields = table.Fields;
-        //             TIndex rate = 0;
-        //             TIndex rateMS = 0;
-        //             string fldRate = table.RecordField(0, fields.NameField("ORate"));
-        //             string fldRateMS = table.RecordField(0, fields.NameField("ORateMS"));
-        //             if (fldRate != null && fldRateMS != null)
-        //             {
-        //                 TIndex.TryParse(fldRate, out rate);
-        //                 TIndex.TryParse(fldRateMS, out rateMS);
-        //             }
-        //             SorFlowSender_.SetFlowCtrl(rate, rateMS);
-        //             if (rate <= 0 || rateMS <= 0)
-        //                 Console.WriteLine("User : {0}, 無流量管制參數", User);
-        //             else
-        //                 Console.WriteLine("User : {0}, 流量管制參數: {0}筆 / 每{1}{2}"
-        //                                                , User
-        //                                                , rate
-        //                                                , rateMS >= 1000 ? (rateMS / 1000.0) : rateMS
-        //                                                , rateMS >= 1000 ? "秒" : "ms");
+        Console.WriteLine("SetRateLimit");
     }
 
-    private void LoadTables(TaskResult signInResult)
-    {
-        _tableManager.ParseSgnResult(signInResult);
-    }
+    private void LoadTables(TaskResult signInResult) =>
+        _tableManager.ParseSignInResult(signInResult);
 
     // 回補委託: 回補全部(「,D」 = 包含成交明細) (SendSorRequest() 必須保留前5碼).
     // "-----1"                 回補全部，不包含成交明細

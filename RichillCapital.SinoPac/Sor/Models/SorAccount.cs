@@ -1,6 +1,6 @@
-namespace RichillCapital.SinoPac.Sor;
+namespace RichillCapital.SinoPac.Sor.Models;
 
-public class Acc
+public class SorAccount
 {
     SorMktFlags Mkt_;
     string Acno_;
@@ -48,7 +48,7 @@ public class Acc
     /// <summary>
     /// 建構, acno 格式為 "brkNo-ivacNo-subacNo" 或 "brkNo-ivacNo".
     /// </summary>
-    public Acc(SorMktFlags mkt, string acno, string name)
+    public SorAccount(SorMktFlags mkt, string acno, string name)
     {
         string[] acs = acno.Split('-');
         Init(mkt, acs.Length > 0 ? acs[0] : null, acs.Length > 1 ? acs[1] : null, acs.Length > 2 ? acs[2] : null, name);
@@ -56,7 +56,7 @@ public class Acc
     /// <summary>
     /// 建構.
     /// </summary>
-    public Acc(SorMktFlags mkt, string brkNo, string ivacNo, string subacNo, string name)
+    public SorAccount(SorMktFlags mkt, string brkNo, string ivacNo, string subacNo, string name)
     {
         Init(mkt, brkNo, ivacNo, subacNo, name);
     }

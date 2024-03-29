@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace RichillCapital.SinoPac.Sor;
 
-internal sealed partial class TaskResult
+public sealed partial class TaskResult
 {
     TImpl Impl_;
 
@@ -24,7 +24,7 @@ internal sealed partial class TaskResult
 
 }
 
-internal sealed partial class TaskResult
+public sealed partial class TaskResult
 {
     [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorTaskResult_WorkID_B")]
     [return: MarshalAs(UnmanagedType.AnsiBStr)]

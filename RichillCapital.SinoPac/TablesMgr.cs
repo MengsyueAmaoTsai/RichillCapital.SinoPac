@@ -21,7 +21,7 @@ public class TablesMgr
     /// 3. 回報表 "RPT:" 當回報欄位屬性有 DDS=xxx 時, 則表示該回報欄位對應到[成交明細]的xxx欄位.
     /// 4. 成交明細表 "DDS:"
 
-    public void ParseSgnResult(TaskResult sgnResult)
+    public void ParseSignInResult(TaskResult sgnResult)
     {
         uint tcount = sgnResult.TableCount;
         List<SorTable> ddsTables = new List<SorTable>();

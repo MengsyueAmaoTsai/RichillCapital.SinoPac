@@ -1,3 +1,5 @@
+using RichillCapital.SinoPac.Sor.Models;
+
 namespace RichillCapital.SinoPac.Sor;
 #region Sor [委託表格/回報表格] 管理
 
@@ -39,7 +41,7 @@ public class OrdTable : KeyedRptTable
     /// 建立要送出的下單訊息內容字串, 不含 ACK ReqSeqNo.
     /// acc = 用哪個帳號的憑證簽章.
 
-    public static string MakeRequestString(string[] flds, string tableID, Acc acc, uint iDigSgn, out string errMsg)
+    public static string MakeRequestString(string[] flds, string tableID, SorAccount acc, uint iDigSgn, out string errMsg)
     {
         errMsg = null;
         string reqmsg1 = string.Empty;

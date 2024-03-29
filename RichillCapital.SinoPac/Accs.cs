@@ -1,3 +1,5 @@
+using RichillCapital.SinoPac.Sor.Models;
+
 namespace RichillCapital.SinoPac.Sor;
 
 /// <summary>
@@ -5,12 +7,12 @@ namespace RichillCapital.SinoPac.Sor;
 /// </summary>
 public class Accs
 {
-    List<Acc> List_ = new List<Acc>();
-    SortedList<string, Acc> Sorted_ = new SortedList<string, Acc>();
+    List<SorAccount> List_ = new List<SorAccount>();
+    SortedList<string, SorAccount> Sorted_ = new SortedList<string, SorAccount>();
     /// <summary>
     /// 增加一個帳號.
     /// </summary>
-    public bool Add(Acc acc, string caDLLName, string cert, int sgnact)
+    public bool Add(SorAccount acc, string caDLLName, string cert, int sgnact)
     {
         if (Sorted_.ContainsKey(acc.Key))
             return false;
@@ -24,7 +26,7 @@ public class Accs
     /// </summary>
     public void Clear()
     {
-        foreach (Acc acc in List_)
+        foreach (SorAccount acc in List_)
             acc.FreeCertConfig();
         List_.Clear();
         Sorted_.Clear();
@@ -33,14 +35,14 @@ public class Accs
     /// 嘗試取的一個帳號, 如果帳號不存在則傳回false.
     /// acno = "BrkNo-IvacNo" 或 "BrkNo-IvacNo-SubacNo"
     /// </summary>
-    public bool TryGetValue(string acno, out Acc ac)
+    public bool TryGetValue(string acno, out SorAccount ac)
     {
         return Sorted_.TryGetValue(acno, out ac);
     }
     /// <summary>
     /// 取得帳號列表.
     /// </summary>
-    public List<Acc> Values { get { return List_; } }
+    public List<SorAccount> Values { get { return List_; } }
     /// <summary>
     ///  取得帳號筆數.
     /// </summary>
@@ -57,7 +59,7 @@ public class Accs
         SorField fldMkt = fields.NameField("mkt");
         SorField fldCert = fields.NameField("cert");
         SorField fldName;
-        Acc acc;
+        SorAccount acc;
         if (fldMkt != null)
         {  // acno 格式: brkno-ivacno-subacno.
             fldName = fields.NameField("name");
@@ -71,7 +73,7 @@ public class Accs
                     continue;
                 int imkt;
                 int.TryParse(mkt, out imkt);
-                acc = new Acc((SorMktFlags)imkt, acno, name);
+                acc = new SorAccount((SorMktFlags)imkt, acno, name);
                 Add(acc, caDLLName, table.RecordField(L, fldCert), sgnact);
             }
         }
@@ -93,7 +95,7 @@ public class Accs
                     continue;
                 int imkt;
                 int.TryParse(mkt, out imkt);
-                acc = new Acc((SorMktFlags)imkt, bhno, ivac, suba, name);
+                acc = new SorAccount((SorMktFlags)imkt, bhno, ivac, suba, name);
                 Add(acc, caDLLName, table.RecordField(L, fldCert), sgnact);
             }
         }

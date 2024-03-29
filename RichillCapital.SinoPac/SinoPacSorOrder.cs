@@ -1,3 +1,5 @@
+using RichillCapital.SinoPac.Sor.Models;
+
 namespace RichillCapital.SinoPac.Sor;
 
 public class SinoPacSorOrder
@@ -5,7 +7,7 @@ public class SinoPacSorOrder
     OrdTable Table_;
     string[] SorValues_;
     List<string[]> DealDetails_ = new List<string[]>();
-    Acc Acc_;
+    SorAccount Acc_;
 
     /// 利用委託欄位 SorValues_ 取得此筆委託的帳號.
     void RegetAcc(Accs accs)
@@ -149,5 +151,5 @@ public class SinoPacSorOrder
     /// <summary>
     /// 此委託所屬的可用帳號.
     /// </summary>
-    public Acc Acc { get { return Acc_; } }
+    public SorAccount Acc { get { return Acc_; } }
 }
