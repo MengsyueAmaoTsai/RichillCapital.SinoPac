@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="./Solution.Build.props" />
+  <Import Project="./Solution.Packages.props" />
+  
+  <ItemGroup>
+    <Compile Remove="Examples\**" />
+    <EmbeddedResource Remove="Examples\**" />
+    <None Remove="Examples\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove=".gitignore" />
+    <None Remove="LICENSE" />
+    <None Remove="README.md" />
+    <None Remove="Solution.Build.props" />
+    <None Remove="Solution.Packages.props" />
+    <None Remove="Solution.ruleset" />
+  </ItemGroup>
+ 
+  <ItemGroup>
+    <Content Include="./Libs/SorApi/libns.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="./Libs/SorApi/msvcp100.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="./Libs/SorApi/msvcr100.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="./Libs/SorApi/SinoPacSorApiCA.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="./Libs/SorApi/SorApi.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>
