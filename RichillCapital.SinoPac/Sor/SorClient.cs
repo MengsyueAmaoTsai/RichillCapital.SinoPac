@@ -105,7 +105,7 @@ public sealed partial class SorClient : IDisposable
 
         SendRequest(0x80, request);
     }
-    private SorTaskResult GetSignInResult() => new(GetSignInResult(ref Impl_));
+    private TaskResult GetSignInResult() => new(GetSignInResult(ref Impl_));
 
     public bool SendRequest(uint messageCode, string request)
     {
@@ -158,12 +158,12 @@ public sealed partial class SorClient : IDisposable
         Console.WriteLine("\n[OnSorReportCallback]");
     }
 
-    private void LoadAccounts(SorTaskResult signInResult)
+    private void LoadAccounts(TaskResult signInResult)
     {
-        var headTable = signInResult.NameTable("head");
-        var modTable = signInResult.NameTable("mod");
-        var accountsTable = signInResult.NameTable("Accs");
-        var recordsTable = signInResult.NameTable("records");
+        var headTable = signInResult.GetTableByName("head");
+        var modTable = signInResult.GetTableByName("mod");
+        var accountsTable = signInResult.GetTableByName("Accs");
+        var recordsTable = signInResult.GetTableByName("records");
 
         int.TryParse(
             modTable.RecordField(0, (headTable.IsInvalid ? modTable : headTable).Fields.NameField("sgnact")),
@@ -206,7 +206,7 @@ public sealed partial class SorClient : IDisposable
         //                                                , rateMS >= 1000 ? "秒" : "ms");
     }
 
-    private void LoadTables(SorTaskResult signInResult)
+    private void LoadTables(TaskResult signInResult)
     {
         _tableManager.ParseSgnResult(signInResult);
     }

@@ -21,16 +21,16 @@ public class TablesMgr
     /// 3. 回報表 "RPT:" 當回報欄位屬性有 DDS=xxx 時, 則表示該回報欄位對應到[成交明細]的xxx欄位.
     /// 4. 成交明細表 "DDS:"
 
-    public void ParseSgnResult(SorTaskResult sgnResult)
+    public void ParseSgnResult(TaskResult sgnResult)
     {
-        uint tcount = sgnResult.TablesCount;
+        uint tcount = sgnResult.TableCount;
         List<SorTable> ddsTables = new List<SorTable>();
         List<ReqKillTable> reqKillTables = new List<ReqKillTable>();
         SorProperties prop;
         string tableName;
         for (uint L = 0; L < tcount; ++L)
         {
-            SorTable table = sgnResult.IndexTable(L);
+            SorTable table = sgnResult.GetTableByIndex(L);
             prop = table.Properties;
             tableName = prop.Name;
             string tableType = tableName.Substring(0, 4);
