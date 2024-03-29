@@ -84,6 +84,28 @@ public sealed partial class SorClient : IDisposable
         SendRequest(0x80, request);
     }
 
+    public void QueryAccountPositions(Acc sorAccount, bool isSummary = true)
+    {
+        var taskId = "QINV";
+
+        var parameters = new Dictionary<string, string>
+        {
+            { "Bkno", sorAccount.BrkNo },
+            { "Ivac", sorAccount.IvacNo },
+            { "QSUM", isSummary ? "Y" : "N" }
+        };
+
+        if (sorAccount.IsSubAccount())
+        {
+            parameters.Add("subac", sorAccount.SubacNo);
+        }
+
+        var sep = '\x01';
+        var request = $"-----{_queryId.Next()}{sep}{taskId}{sep}{parameters
+            .Select(p => $"{p.Key}={p.Value}")}";
+
+        SendRequest(0x80, request);
+    }
     private SorTaskResult GetSignInResult() => new(GetSignInResult(ref Impl_));
 
     public bool SendRequest(uint messageCode, string request)

@@ -17,6 +17,10 @@ if (firstAccount is null)
 client.QueryAccountBalance(firstAccount);
 await Wait();
 
+
+client.QueryAccountPositions(firstAccount);
+await Wait();
+
 client.Disconnect();
 await Wait();
 
