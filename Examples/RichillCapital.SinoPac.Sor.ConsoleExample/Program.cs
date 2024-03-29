@@ -1,19 +1,13 @@
 ﻿using DotNetEnv;
 using RichillCapital.SinoPac.Sor;
 
-Env.Load("./Examples/RichillCapital.SinoPac.Sor.ConsoleExample/.env");
-
-var userId = Env.GetString("USER_ID");
-var password = Env.GetString("PASSWORD");
-
-
-Console.WriteLine($"User ID: {userId}");
-Console.WriteLine($"Password: {password}");
+var envPath = "./Examples/RichillCapital.SinoPac.Sor.ConsoleExample/.env";
+Env.Load(envPath);
 
 var client = new SorClient();
 
-
-client.Connect(userId, password);
+var credentials = GetCredentials();
+client.Connect(credentials.UserId, credentials.Password);
 await Wait();
 
 var accountsResult = client.GetAccounts();
@@ -38,3 +32,18 @@ await Wait();
 
 
 async Task Wait() => await Task.Delay(1500);
+
+
+
+(string UserId, string Password) GetCredentials()
+{
+    var userId = Environment.GetEnvironmentVariable("USER_ID");
+    var password = Environment.GetEnvironmentVariable("PASSWORD");
+
+    if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(password))
+    {
+        throw new Exception("USER_ID and PASSWORD environment variables must be set");
+    }
+
+    return (userId, password);
+}

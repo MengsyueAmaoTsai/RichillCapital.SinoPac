@@ -26,7 +26,6 @@ public sealed partial class SorClient : IDisposable
         Callbacks_.OnTaskResult = HandleTaskResult;
         Callbacks_.OnRequestAck = HandleRequestAck;
         Callbacks_.OnReport = HandleReport;
-        // Callbacks_.OnSorClientDeleteCallback = null;
 
         Impl_ = isEventOnMessageLoop ?
             CreateOnMessageLoop(ref Callbacks_, IntPtr.Zero) :
