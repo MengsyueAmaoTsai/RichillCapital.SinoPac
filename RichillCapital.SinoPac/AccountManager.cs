@@ -2,16 +2,11 @@ using RichillCapital.SinoPac.Sor.Models;
 
 namespace RichillCapital.SinoPac.Sor;
 
-/// <summary>
-/// 交易帳號列表.
-/// </summary>
-public class Accs
+public class AccountManager
 {
     List<SorAccount> List_ = new List<SorAccount>();
     SortedList<string, SorAccount> Sorted_ = new SortedList<string, SorAccount>();
-    /// <summary>
-    /// 增加一個帳號.
-    /// </summary>
+
     public bool Add(SorAccount acc, string caDLLName, string cert, int sgnact)
     {
         if (Sorted_.ContainsKey(acc.Key))
@@ -19,11 +14,11 @@ public class Accs
         acc.LoadCertConfig(caDLLName, cert, sgnact);
         Sorted_.Add(acc.Key, acc);
         List_.Add(acc);
+
         return true;
     }
-    /// <summary>
+
     /// 清除全部帳號.
-    /// </summary>
     public void Clear()
     {
         foreach (SorAccount acc in List_)
@@ -31,35 +26,31 @@ public class Accs
         List_.Clear();
         Sorted_.Clear();
     }
-    /// <summary>
+
     /// 嘗試取的一個帳號, 如果帳號不存在則傳回false.
     /// acno = "BrkNo-IvacNo" 或 "BrkNo-IvacNo-SubacNo"
-    /// </summary>
     public bool TryGetValue(string acno, out SorAccount ac)
     {
         return Sorted_.TryGetValue(acno, out ac);
     }
-    /// <summary>
-    /// 取得帳號列表.
-    /// </summary>
+
     public List<SorAccount> Values { get { return List_; } }
-    /// <summary>
-    ///  取得帳號筆數.
-    /// </summary>
     public int Count { get { return List_.Count; } }
-    /// <summary>
+
     /// 從 SorTable 取得可用帳號列表.
-    /// </summary>
     public void SorTableParser(SorTable table, string caDLLName, int sgnact)
     {
         if (table.IsInvalid)
             return;
+
         uint L, rcount = table.RecordsCount;
+
         SorFields fields = table.Fields;
         SorField fldMkt = fields.NameField("mkt");
         SorField fldCert = fields.NameField("cert");
         SorField fldName;
         SorAccount acc;
+
         if (fldMkt != null)
         {  // acno 格式: brkno-ivacno-subacno.
             fldName = fields.NameField("name");

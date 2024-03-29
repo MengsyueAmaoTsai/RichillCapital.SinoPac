@@ -34,7 +34,7 @@ public class OrdsTable
     /// <summary>
     /// 增加一筆新委託書 or 若已存在則更新.
     /// </summary>
-    public SinoPacSorOrder AddSorOrd(OrdTable ordTable, string orgSorRID, string[] flds, Accs accs)
+    public SinoPacSorOrder AddSorOrd(OrdTable ordTable, string orgSorRID, string[] flds, AccountManager accs)
     {
         SinoPacSorOrder ord;
         int lisuint;

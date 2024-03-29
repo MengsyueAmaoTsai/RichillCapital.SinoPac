@@ -10,7 +10,7 @@ public class SinoPacSorOrder
     SorAccount Acc_;
 
     /// 利用委託欄位 SorValues_ 取得此筆委託的帳號.
-    void RegetAcc(Accs accs)
+    void RegetAcc(AccountManager accs)
     {
         if (accs == null)
             return;
@@ -32,7 +32,7 @@ public class SinoPacSorOrder
     /// <summary>
     /// 建構.
     /// </summary>
-    public SinoPacSorOrder(OrdTable table, string[] values, Accs accs)
+    public SinoPacSorOrder(OrdTable table, string[] values, AccountManager accs)
     {
         Table_ = table;
         if (values == null)
@@ -72,7 +72,7 @@ public class SinoPacSorOrder
     /// <summary>
     /// 回報更新委託內容, 如果是成交回報,則可能會加入成交明細表.
     /// </summary>
-    public void SetRptFields(RptTable rptTable, string[] rptFlds, Accs accs)
+    public void SetRptFields(RptTable rptTable, string[] rptFlds, AccountManager accs)
     {
         SorTable sorTable;
         SorField field;

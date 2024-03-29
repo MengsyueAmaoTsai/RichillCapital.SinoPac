@@ -1,17 +1,12 @@
 namespace RichillCapital.SinoPac.Sor;
-#region Sor [委託表格/回報表格] 管理
 
-public class DDSTable : RptTableBase
+public class ExecutionTable : ReportTableBase
 {
-    uint FieldsCount_;
-
-    public DDSTable(SorTable table)
+    public ExecutionTable(SorTable table)
         : base(table)
     {
-        FieldsCount_ = table.Fields.Count;
+        FieldCount = table.Fields.Count;
     }
 
-    /// 成交明細欄位數量.
-    public uint FieldsCount { get { return FieldsCount_; } }
+    public uint FieldCount { get; private init; }
 }
-#endregion

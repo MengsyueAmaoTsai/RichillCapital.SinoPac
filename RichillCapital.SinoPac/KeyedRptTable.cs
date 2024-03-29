@@ -4,7 +4,7 @@ namespace RichillCapital.SinoPac.Sor;
 /// <summary>
 /// SOR回報表(RPT,ORD).
 /// </summary>
-public class KeyedRptTable : RptTableBase
+public class KeyedRptTable : ReportTableBase
 {
     /// <summary>
     /// OrgSorRID 在 SOR欄位的索引.

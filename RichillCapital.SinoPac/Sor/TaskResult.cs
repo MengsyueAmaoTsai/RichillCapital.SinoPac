@@ -19,9 +19,7 @@ public sealed partial class TaskResult
 
     public SorTable GetTableByName(string tableName) => new(GetTableByName(ref Impl_, tableName));
 
-    /// 使用 index 取得結果資料表.
     public SorTable GetTableByIndex(uint index) => new(GetTableByIndex(ref Impl_, index));
-
 }
 
 public sealed partial class TaskResult

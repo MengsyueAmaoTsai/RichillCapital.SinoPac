@@ -3,7 +3,7 @@ namespace RichillCapital.SinoPac.Sor;
 /// <summary>
 /// 各類SOR回報表(RPT,ORD,DDS).
 /// </summary>
-public class RptTableBase : IComparable
+public class ReportTableBase : IComparable
 {
     SorTable Table_;
     SorMktFlags MktFlag_;
@@ -11,7 +11,7 @@ public class RptTableBase : IComparable
     /// <summary>
     /// 建構
     /// </summary>
-    public RptTableBase(SorTable table)
+    public ReportTableBase(SorTable table)
     {
         Table_ = table;
         MktFlag_ = table.MktFlag;
@@ -38,7 +38,7 @@ public class RptTableBase : IComparable
 
     int IComparable.CompareTo(object obj)
     {
-        RptTableBase r = obj as RptTableBase;
+        ReportTableBase r = obj as ReportTableBase;
         if (r != null)
             return this.Table_.Properties.Name.CompareTo(r.Table_.Properties.Name);
         return this.Table_.Properties.Name.CompareTo(r.ToString());

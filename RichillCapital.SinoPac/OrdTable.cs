@@ -12,7 +12,7 @@ public class OrdTable : KeyedRptTable
     uint ISubacNo_;
     uint IOrdNo_;
     uint ILeavesQty_;
-    internal DDSTable DDSTable_;
+    internal ExecutionTable DDSTable_;
     internal ReqKillTable ReqKillTable_;
 
     public OrdTable(SorTable table)
@@ -34,7 +34,7 @@ public class OrdTable : KeyedRptTable
 
     internal void CreateDDSTable(SorTable ddst)
     {
-        DDSTable_ = new DDSTable(ddst);
+        DDSTable_ = new ExecutionTable(ddst);
     }
 
 

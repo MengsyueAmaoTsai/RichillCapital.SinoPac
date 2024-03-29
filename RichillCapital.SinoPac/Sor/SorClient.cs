@@ -12,7 +12,7 @@ public sealed partial class SorClient : IDisposable
     SorClientDelegates Callbacks_ = new();
 
     private readonly QueryId _queryId = new();
-    private readonly Accs _accountManager = new();
+    private readonly AccountManager _accountManager = new();
     private readonly TablesMgr _tableManager = new();
 
     public event EventHandler<SorStateChangedEvent>? StateChanged;

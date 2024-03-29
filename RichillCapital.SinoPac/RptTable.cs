@@ -32,7 +32,7 @@ public class RptTable : KeyedRptTable
     {
         if (ordTable.DDSTable_ == null || DDSFldNames_.Count <= 0)
             return null;
-        uint ddsFldCount = ordTable.DDSTable_.FieldsCount;
+        uint ddsFldCount = ordTable.DDSTable_.FieldCount;
         if (ddsFldCount <= 0)
             return null;
         uint[] ddsidxs;
