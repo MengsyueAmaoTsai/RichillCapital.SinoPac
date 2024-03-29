@@ -1,8 +1,6 @@
 namespace RichillCapital.SinoPac.Sor;
-#region Sor [委託表格/回報表格] 管理
 
-
-/// SOR回報表(RPT, ORD).
+/// SOR回報表(RPT, ORD).  Sor [委託表格/回報表格] 管理
 public class RptTable : KeyedRptTable
 {
     SortedList<string, uint> DDSFldNames_ = new SortedList<string, uint>();
@@ -18,9 +16,9 @@ public class RptTable : KeyedRptTable
         uint fcount = fields.Count;
         for (uint L = 0; L < fcount; ++L)
         {
-            SorField fld = fields.IndexField(L);
+            SorField fld = fields.GetByIndex(L).Value;
             SorProperties prop = fld.Properties;
-            string ddsFld = prop.Get("DDS");
+            string ddsFld = prop.GetValue("DDS");
             if (!string.IsNullOrEmpty(ddsFld))
                 DDSFldNames_[ddsFld] = L;
         }
@@ -45,7 +43,7 @@ public class RptTable : KeyedRptTable
         SorFields ddsFields = ordTable.DDSTable_.SorTable.Fields;
         foreach (string ddsName in DDSFldNames_.Keys)
         {
-            uint fldIndex = ddsFields.NameFieldIndex(ddsName);
+            uint fldIndex = ddsFields.GetIndexByName(ddsName).Value;
             if (fldIndex < ddsFldCount)
                 ddsidxs[fldIndex] = DDSFldNames_.Values[L];
             ++L;
@@ -53,4 +51,3 @@ public class RptTable : KeyedRptTable
         return ddsidxs;
     }
 }
-#endregion

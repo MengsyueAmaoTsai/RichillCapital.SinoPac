@@ -57,9 +57,14 @@ public sealed class SorOrder
     {
         get
         {
-            uint index = Table.SorTable.Fields.NameFieldIndex(fieldName);
+            uint index = Table.SorTable.Fields.GetIndexByName(fieldName).Value;
+
             if (index == SorField.InvalidIndex || index >= SorValues_.Length)
+            {
                 return null;
+
+            }
+
             return SorValues_[index];
         }
     }
@@ -77,9 +82,9 @@ public sealed class SorOrder
             sorTable = rptTable.SorTable;
             for (uint i = 0; i < sorTable.Fields.Count; i++)
             {
-                field = rptTable.SorTable.Fields.IndexField(i);
+                field = rptTable.SorTable.Fields.GetByIndex(i).Value;
                 value = rptFlds[i];
-                index = Table_.SorTable.Fields.NameFieldIndex(field.Properties.Name);
+                index = Table_.SorTable.Fields.GetIndexByName(field.Properties.Name).ValueOrDefault;
                 if (index < SorValues_.Length)
                     SorValues_[index] = value;
             }

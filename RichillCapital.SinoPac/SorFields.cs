@@ -1,29 +1,54 @@
 using System.Runtime.InteropServices;
+using RichillCapital.SharedKernel;
+using RichillCapital.SharedKernel.Monads;
 
 namespace RichillCapital.SinoPac.Sor;
 
 public sealed partial class SorFields
 {
-    TImpl Impl_;
-    internal SorFields(TImpl impl)
+    private TImpl Impl_;
+
+    internal SorFields(TImpl impl) => Impl_ = impl;
+
+    public uint Count => GetCount(ref Impl_);
+
+    public Maybe<SorField> GetByName(string fieldName)
     {
-        Impl_ = impl;
+        var result = SorField.Create(CSorFields_NameField(ref Impl_, fieldName));
+
+        if (result.IsFailure)
+        {
+            return Maybe<SorField>.Null;
+        }
+
+        return result.Value.ToMaybe();
     }
 
-    /// 用欄位名稱取得欄位,若不存在則傳回null.
-    public SorField NameField(string fieldName) { return SorField.MakeSorField(CSorFields_NameField(ref Impl_, fieldName)); }
-
-    /// 用欄位名稱取得欄位索引,若不存在則傳回 SorField.InvalidIndex
-    public uint NameFieldIndex(string fieldName)
+    public Maybe<SorField> GetByIndex(uint fieldIndex)
     {
-        TImpl impl = CSorFields_NameField(ref Impl_, fieldName);
-        return (impl.IsInvalid ? SorField.InvalidIndex : SorField.GetIndex(ref impl));
+        var result = SorField.Create(CSorFields_IndexField(ref Impl_, fieldIndex));
+
+        if (result.IsFailure)
+        {
+            return Maybe<SorField>.Null;
+        }
+
+        return result.Value.ToMaybe();
     }
 
-    /// 用索引取得欄位,若不存在則傳回null.
-    public SorField IndexField(uint fieldIndex) { return SorField.MakeSorField(CSorFields_IndexField(ref Impl_, fieldIndex)); }
+    public Result<uint> GetIndexByName(string name)
+    {
+        TImpl impl = CSorFields_NameField(ref Impl_, name);
 
-    public uint Count { get { return CSorFields_Count(ref Impl_); } }
+
+        if (impl.IsInvalid)
+        {
+            return Result<uint>
+                .Failure(Error.Invalid("Invalid field implementation."));
+        }
+
+        return SorField.GetIndex(ref impl).ToResult();
+    }
 }
 
 public sealed partial class SorFields
@@ -36,5 +61,5 @@ public sealed partial class SorFields
     private static extern TImpl CSorFields_IndexField(ref TImpl impl, uint fieldIndex);
 
     [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorFields_Count")]
-    private static extern uint CSorFields_Count(ref TImpl impl);
+    private static extern uint GetCount(ref TImpl impl);
 }

@@ -37,24 +37,24 @@ public class TableManager
             tableName = tableName.Substring(4);
             if (tableType == "REQ:")
             {
-                if (prop.Get("IsNew") == "Y")
+                if (prop.GetValue("IsNew") == "Y")
                     continue;
                 // 改單要求.
                 SorFields fields = table.Fields;
-                string tableID = prop.Get("ID");
+                string tableID = prop.GetValue("ID");
                 if (!string.IsNullOrEmpty(tableID))
                 {
-                    string propIsDel = prop.Get("IsDel");
+                    string propIsDel = prop.GetValue("IsDel");
                     bool isDelTable = (!string.IsNullOrEmpty(propIsDel) && propIsDel[0] == 'Y');
-                    uint idxFldQty = fields.NameFieldIndex("Qty");
-                    uint idxFldBidQty = fields.NameFieldIndex("BidQty");
-                    uint idxFldOfferQty = fields.NameFieldIndex("OfferQty");
+                    uint idxFldQty = fields.GetIndexByName("Qty").Value;
+                    uint idxFldBidQty = fields.GetIndexByName("BidQty").Value;
+                    uint idxFldOfferQty = fields.GetIndexByName("OfferQty").Value;
                     if (isDelTable || idxFldQty != SorField.InvalidIndex || (idxFldBidQty != SorField.InvalidIndex && idxFldOfferQty != SorField.InvalidIndex))
                     {
-                        uint idxFldAmendKey = fields.NameFieldIndex("OrdID");
+                        uint idxFldAmendKey = fields.GetIndexByName("OrdID").Value;
                         if (idxFldAmendKey == SorField.InvalidIndex)
-                            idxFldAmendKey = fields.NameFieldIndex("AmendKey");
-                        uint idxFldOrgSorRID = fields.NameFieldIndex("OrgSorRID");
+                            idxFldAmendKey = fields.GetIndexByName("AmendKey").Value;
+                        uint idxFldOrgSorRID = fields.GetIndexByName("OrgSorRID").Value;
                         if (idxFldAmendKey != SorField.InvalidIndex || idxFldOrgSorRID != SorField.InvalidIndex)
                         {
                             if (idxFldBidQty != SorField.InvalidIndex && idxFldOfferQty != SorField.InvalidIndex)

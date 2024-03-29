@@ -20,7 +20,7 @@ public class ReqKillTable
         MktFlag_ = reqTable.MktFlag;
         IdxFldAmendKey_ = idxFldAmendKey;
         IdxFldOrgSorRID_ = idxFldOrgSorRID;
-        IdxDigSgn_ = reqTable.Fields.NameFieldIndex("DigSgn");
+        IdxDigSgn_ = reqTable.Fields.GetIndexByName("DigSgn").Value;
         TableID_ = tableID;
         ReqFlds_ = new string[reqTable.Fields.Count];
     }

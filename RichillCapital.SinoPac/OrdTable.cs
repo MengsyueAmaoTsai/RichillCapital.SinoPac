@@ -19,11 +19,11 @@ public class OrdTable : KeyedRptTable
         : base(table)
     {
         SorFields fields = table.Fields;
-        IBrkNo_ = fields.NameFieldIndex("BrkNo");
-        IIvacNo_ = fields.NameFieldIndex("IvacNo");
-        ISubacNo_ = fields.NameFieldIndex("SubacNo");
-        IOrdNo_ = fields.NameFieldIndex("OrdNo");
-        ILeavesQty_ = fields.NameFieldIndex("LeavesQty");
+        IBrkNo_ = fields.GetIndexByName("BrkNo").Value;
+        IIvacNo_ = fields.GetIndexByName("IvacNo").Value;
+        ISubacNo_ = fields.GetIndexByName("SubacNo").Value;
+        IOrdNo_ = fields.GetIndexByName("OrdNo").Value;
+        ILeavesQty_ = fields.GetIndexByName("LeavesQty").Value;
     }
     public uint IBrkNo { get { return IBrkNo_; } }
     public uint IIvacNo { get { return IIvacNo_; } }

@@ -1,5 +1,6 @@
 ﻿using DotNetEnv;
 using RichillCapital.SinoPac.Sor;
+using RichillCapital.SinoPac.Sor.ConsoleExample;
 
 var envPath = "./Examples/RichillCapital.SinoPac.Sor.ConsoleExample/.env";
 Env.Load(envPath);
@@ -31,14 +32,14 @@ client.Disconnect();
 await Wait();
 
 
+#region  Local Functions
+
 async Task Wait() => await Task.Delay(1500);
-
-
 
 (string UserId, string Password) GetCredentials()
 {
-    var userId = Environment.GetEnvironmentVariable("USER_ID");
-    var password = Environment.GetEnvironmentVariable("PASSWORD");
+    var userId = Environment.GetEnvironmentVariable(EnvKey.UserId);
+    var password = Environment.GetEnvironmentVariable(EnvKey.Password);
 
     if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(password))
     {
@@ -47,3 +48,6 @@ async Task Wait() => await Task.Delay(1500);
 
     return (userId, password);
 }
+
+#endregion
+

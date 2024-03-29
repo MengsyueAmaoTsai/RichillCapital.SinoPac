@@ -1,9 +1,13 @@
 using System.Runtime.InteropServices;
+using RichillCapital.SharedKernel;
+using RichillCapital.SharedKernel.Monads;
 
 namespace RichillCapital.SinoPac.Sor;
 
 public sealed partial class SorField
 {
+    public const uint InvalidIndex = 0xffffffff;
+
     internal TImpl Impl_;
 
     internal SorField(TImpl impl)
@@ -11,25 +15,39 @@ public sealed partial class SorField
         Impl_ = impl;
     }
 
-    internal static SorField MakeSorField(TImpl impl)
+    internal static Result<SorField> Create(TImpl impl)
     {
-        return impl.IsInvalid ? null : new SorField(impl);
+        if (impl.IsInvalid)
+        {
+            return Result<SorField>
+                .Failure(Error.Invalid("Invalid field implementation."));
+        }
+
+        return new SorField(impl).ToResult();
     }
 
-    /// 取得欄位屬性列表
-    public SorProperties Properties => new SorProperties(CSorField_Properties(ref Impl_));
+    public SorProperties Properties => new(GetProperties(ref Impl_));
 
-    /// 取得欄位的索引, InvalidIndex 表示欄位有誤.
-    public uint Index => GetIndex(ref Impl_);
+    public Result<uint> Index
+    {
+        get
+        {
+            var index = GetIndex(ref Impl_);
 
-    /// 無效的欄位索引.
-    public const uint InvalidIndex = 0xffffffff;
+            if (index == InvalidIndex)
+            {
+                return Result<uint>.Failure(Error.Invalid("Invalid field index."));
+            }
+
+            return index.ToResult();
+        }
+    }
 }
 
 public sealed partial class SorField
 {
     [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorField_Properties")]
-    private static extern TImpl CSorField_Properties(ref TImpl impl);
+    private static extern TImpl GetProperties(ref TImpl impl);
 
     [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorField_Index")]
     internal static extern uint GetIndex(ref TImpl impl);

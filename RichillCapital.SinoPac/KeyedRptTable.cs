@@ -16,7 +16,7 @@ public class KeyedRptTable : ReportTableBase
     public KeyedRptTable(SorTable table)
         : base(table)
     {
-        IOrgSorRID_ = table.Fields.NameFieldIndex("OrgSorRID");
+        IOrgSorRID_ = table.Fields.GetIndexByName("OrgSorRID").Value;
     }
 
     /// <summary>

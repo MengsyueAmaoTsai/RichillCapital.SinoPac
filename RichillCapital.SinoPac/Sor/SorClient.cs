@@ -209,8 +209,15 @@ public sealed partial class SorClient : IDisposable
         var accountsTable = signInResult.GetTableByName("Accs");
         var recordsTable = signInResult.GetTableByName("records");
 
+        var tableToParse = (headTable.IsInvalid ? modTable : headTable).Fields.GetByName("sgnact");
+
+        if (tableToParse.IsNull)
+        {
+            throw new InvalidOperationException("Cannot find table to parse.");
+        }
+
         int.TryParse(
-            modTable.RecordField(0, (headTable.IsInvalid ? modTable : headTable).Fields.NameField("sgnact")),
+            modTable.RecordField(0, tableToParse.Value),
             out int signInAct);
 
         _accountManager.SorTableParser(
