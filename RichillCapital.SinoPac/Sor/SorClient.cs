@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using RichillCapital.SharedKernel;
 using RichillCapital.SharedKernel.Monads;
 using RichillCapital.SinoPac.Sor.Events;
 using RichillCapital.SinoPac.Sor.Models;
@@ -59,9 +60,21 @@ public sealed partial class SorClient : IDisposable
         return Result.Success;
     }
 
-    public IReadOnlyCollection<SorAccount> GetAccounts() => _accountManager.Values.AsReadOnly();
+    public Result<IReadOnlyCollection<SorAccount>> GetAccounts()
+    {
+        if (State != SorClientState.SorClientState_ApReady)
+        {
+            return Error
+                .Invalid("Cannot get accounts when not connected to server.")
+                .ToResult<IReadOnlyCollection<SorAccount>>();
+        }
 
-    public void QueryAccountBalance(SorAccount sorAccount, string currencyCode = "NTX")
+        return _accountManager.Values
+            .AsReadOnly()
+            .ToResult<IReadOnlyCollection<SorAccount>>();
+    }
+
+    public Result QueryAccountBalance(SorAccount sorAccount, string currencyCode = "NTX")
     {
         var taskId = "QBal";
 
@@ -81,10 +94,10 @@ public sealed partial class SorClient : IDisposable
         var request = $"-----{_queryId.Next()}{sep}{taskId}{sep}{parameters
             .Select(p => $"{p.Key}={p.Value}")}";
 
-        SendRequest(0x80, request);
+        return SendRequest(0x80, request);
     }
 
-    public void QueryAccountPositions(SorAccount sorAccount, bool isSummary = true)
+    public Result QueryAccountPositions(SorAccount sorAccount, bool isSummary = true)
     {
         var taskId = "QINV";
 
@@ -104,20 +117,29 @@ public sealed partial class SorClient : IDisposable
         var request = $"-----{_queryId.Next()}{sep}{taskId}{sep}{parameters
             .Select(p => $"{p.Key}={p.Value}")}";
 
-        SendRequest(0x80, request);
+        return SendRequest(0x80, request);
     }
+
     private TaskResult GetSignInResult() => new(GetSignInResult(ref Impl_));
 
-    public bool SendRequest(uint messageCode, string request)
+    public Result SendRequest(uint messageCode, string request)
     {
-        var isSuccess = SendRequest(ref Impl_, messageCode, request, (uint)request.Length);
 
-        if (!isSuccess)
+        if (State != SorClientState.SorClientState_ApReady)
         {
-            Console.WriteLine("SendSorRequest failed");
+            return Error
+                .Invalid("Cannot send request when not connected to server.")
+                .ToResult();
         }
 
-        return isSuccess;
+        if (!SendRequest(ref Impl_, messageCode, request, (uint)request.Length))
+        {
+            return Error
+                .Invalid("Failed to send request.")
+                .ToResult();
+        }
+
+        return Result.Success;
     }
 
     void HandleUnknownMessageCode(ref TImpl sender, IntPtr userData, uint msgCode, IntPtr pkptr, uint pksz)
@@ -129,6 +151,28 @@ public sealed partial class SorClient : IDisposable
     {
         Console.WriteLine("\n[OnSorConnectCallback]");
         Console.WriteLine($"State = {State}");
+
+
+        // 如果errorMessage是空的 表示連線成功
+        // 如果errorMessage不是空的 表示連線失敗
+
+        if (string.IsNullOrEmpty(errorMessage))
+        {
+            Console.WriteLine("Connected");
+            return;
+        }
+
+        // 帳號不存在
+        if (errorMessage.Contains("ORA-20003"))
+        {
+            Console.WriteLine("Customer not exists.");
+        }
+
+        // 密碼錯誤
+        if (errorMessage.Contains("ORA-20004"))
+        {
+            Console.WriteLine("Invalid password.");
+        }
     }
 
     void HandleApReady(ref TImpl sender, IntPtr userData)
@@ -205,15 +249,7 @@ public sealed partial class SorClient : IDisposable
     // "-----2" + "\x01" + "YYYYMMDDHHMMSS,M"  指定時間，僅回補有成交, 並包含成交明細
     // "-----0"                 不回補,且不收任何回報
     // "-----0m"                不回補、且不收委託回報，僅收成交回報
-    private void RecoverExecutions()
-    {
-        var isSuccess = SendRequest(0x83, "-----1" + "\x01" + "D");
-
-        if (!isSuccess)
-        {
-            Console.WriteLine("RecoverExecutions failed");
-        }
-    }
+    private Result RecoverExecutions() => SendRequest(0x83, "-----1" + "\x01" + "D");
 }
 
 public sealed partial class SorClient : IDisposable

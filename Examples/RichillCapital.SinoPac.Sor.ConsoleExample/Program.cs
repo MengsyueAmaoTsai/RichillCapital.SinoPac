@@ -1,18 +1,30 @@
-﻿using RichillCapital.SinoPac.Sor;
+﻿using DotNetEnv;
+using RichillCapital.SinoPac.Sor;
+
+Env.Load("./Examples/RichillCapital.SinoPac.Sor.ConsoleExample/.env");
+
+var userId = Env.GetString("USER_ID");
+var password = Env.GetString("PASSWORD");
+
+
+Console.WriteLine($"User ID: {userId}");
+Console.WriteLine($"Password: {password}");
 
 var client = new SorClient();
 
 
-client.Connect("P123622990", "Among720!");
+client.Connect(userId, password);
 await Wait();
 
-var firstAccount = client.GetAccounts().FirstOrDefault();
+var accountsResult = client.GetAccounts();
 
-if (firstAccount is null)
+if (accountsResult.IsFailure)
 {
-    Console.WriteLine("No accounts found.");
+    Console.WriteLine(accountsResult.Error);
     return;
 }
+
+var firstAccount = accountsResult.ValueOrDefault.First();
 
 client.QueryAccountBalance(firstAccount);
 await Wait();
