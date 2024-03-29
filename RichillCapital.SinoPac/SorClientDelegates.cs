@@ -1,6 +1,6 @@
 namespace RichillCapital.SinoPac.Sor;
 
-struct CSorClientCallbacks
+struct SorClientDelegates
 {
     public OnSorUnknownMsgCodeCallbackDelegate OnSorUnknownMsgCodeCallback;
     public OnSorConnectCallbackDelegate OnSorConnectCallback;

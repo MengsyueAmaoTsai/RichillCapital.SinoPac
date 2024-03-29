@@ -1,190 +1,187 @@
 using System.Runtime.InteropServices;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using RichillCapital.SharedKernel.Monads;
+using RichillCapital.SinoPac.Sor.Events;
 
 namespace RichillCapital.SinoPac.Sor;
 
-public class SorClient : IDisposable
+public sealed partial class SorClient : IDisposable
 {
     internal TImpl Impl_;
-    CSorClientCallbacks Callbacks_ = new CSorClientCallbacks();
 
-    #region SorClient Callbacks 轉 C# event
-    void OnSorUnknownMsgCodeCallback(ref TImpl sender, IntPtr userdata, uint msgCode, IntPtr pkptr, uint pksz)
-    {
-        if (OnSorUnknownMsgCodeEvent != null)
-            OnSorUnknownMsgCodeEvent(this, msgCode, pkptr, pksz);
-    }
-    void OnSorConnectCallback(ref TImpl sender, IntPtr userdata, string errmsg)
-    {
-        if (OnSorConnectEvent != null)
-            OnSorConnectEvent(this, errmsg);
-    }
-    void OnSorApReadyCallback(ref TImpl sender, IntPtr userdata)
-    {
-        if (OnSorApReadyEvent != null)
-            OnSorApReadyEvent(this);
-    }
-    void OnSorTaskResultCallback(ref TImpl sender, IntPtr userdata, ref TImpl taskResult)
-    {
-        if (OnSorTaskResultEvent != null)
-            OnSorTaskResultEvent(this, new SorTaskResult(taskResult));
-    }
-    void OnSorChgPassResultCallback(ref TImpl sender, IntPtr userdata, string user, string result)
-    {
-        if (OnSorChgPassResultEvent != null)
-            OnSorChgPassResultEvent(this, user, result);
-    }
-    void OnSorRequestAckCallback(ref TImpl sender, IntPtr userdata, uint msgCode, string result)
-    {
-        if (OnSorRequestAckEvent != null)
-            OnSorRequestAckEvent(this, msgCode, result);
-    }
-    void OnSorReportCallback(ref TImpl sender, IntPtr userdata, string result)
-    {
-        if (OnSorReportEvent != null)
-            OnSorReportEvent(this, result);
-    }
-    void OnSorClientDeleteCallback(ref TImpl sender, IntPtr userdata)
-    {
-        if (OnSorClientDeleteEvent != null)
-            OnSorClientDeleteEvent(this);
-    }
-    #endregion
+    SorClientDelegates Callbacks_ = new();
 
-    #region 建構 & 解構
-    /// 使用 MessageLoop 事件通知, 建構 CSorClient, evHandler 會被複製一份在 CSorClient 裡面.
-    [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorClient_Create_OnMessageLoop")]
-    private static extern TImpl CSorClient_Create_OnMessageLoop(ref CSorClientCallbacks evHandler, IntPtr userdata);
-    /// 使用 Thread 事件通知, 建構 CSorClient, evHandler 會被複製一份在 CSorClient 裡面.
-    [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorClient_Create")]
-    private static extern TImpl CSorClient_Create(ref CSorClientCallbacks evHandler, IntPtr userdata);
-    /// <summary>
-    /// 建構.
-    /// </summary>
-    /// <param name="isEventOnMessageLoop">
-    ///   true=在MessageLoop觸發事件, false=事件觸發可能在任一Thread,
-    ///   只有 OnSorClientDeleteEvent事件 不受這個限制, 此事件一律都在呼叫 Dispose()的那個Thread, 且在返回前觸發.
-    ///  </param>
+    TablesMgr _tableManager = new();
+    Accs _accountManager = new();
+
+    public event EventHandler<SorStateChangedEvent>? StateChanged;
+
     public SorClient(bool isEventOnMessageLoop = false)
     {
         Callbacks_.OnSorUnknownMsgCodeCallback = OnSorUnknownMsgCodeCallback;
         Callbacks_.OnSorConnectCallback = OnSorConnectCallback;
         Callbacks_.OnSorApReadyCallback = OnSorApReadyCallback;
         Callbacks_.OnSorTaskResultCallback = OnSorTaskResultCallback;
-        Callbacks_.OnSorChgPassResultCallback = OnSorChgPassResultCallback;
         Callbacks_.OnSorRequestAckCallback = OnSorRequestAckCallback;
         Callbacks_.OnSorReportCallback = OnSorReportCallback;
-        Callbacks_.OnSorClientDeleteCallback = null;// OnSorClientDeleteCallback;
-        Impl_ = isEventOnMessageLoop ? CSorClient_Create_OnMessageLoop(ref Callbacks_, IntPtr.Zero) : CSorClient_Create(ref Callbacks_, IntPtr.Zero);
+        // Callbacks_.OnSorClientDeleteCallback = null;
+
+        Impl_ = isEventOnMessageLoop ?
+            CreateOnMessageLoop(ref Callbacks_, IntPtr.Zero) :
+            Create(ref Callbacks_, IntPtr.Zero);
     }
 
-    /// 解構 CSorClient.
-    [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorClient_Delete")]
-    private static extern void CSorClient_Delete(ref TImpl cli);
-    /// <summary>
-    ///  解構.
-    /// </summary>
-    public void Dispose()
+    public SorClientState State => GetClientState(ref Impl_);
+
+    public bool IsConnected => IsSessionConnected(ref Impl_);
+
+    public void Dispose() => Delete(ref Impl_);
+
+    public Result Connect(string userId, string password)
     {
-        CSorClient_Delete(ref Impl_);
+        Connect(
+            ref Impl_,
+            SorApi.DefaultHost,
+            "SorApiCS",
+            SorApi.Version,
+            SorApi.SystemId,
+            userId,
+            password);
+
+        return Result.Success;
     }
-    #endregion
 
-    #region Events
-    /// 當收到[不明訊息]時的通知.
-    public OnSorUnknownMsgCodeEvent OnSorUnknownMsgCodeEvent;
-    /// SORS連線訊息通知, if(errmsg.empty()) 表示成功, 此時可呼叫 sender.ServerName() 取得主機名稱.
-    public OnSorConnectEvent OnSorConnectEvent;
-    /// SORS已備妥,可以下單或執行特定作業.
-    public OnSorApReadyEvent OnSorApReadyEvent;
-    /// 一般作業結果通知.
-    public OnSorTaskResultEvent OnSorTaskResultEvent;
-    /// 改密碼結果, if(result.empty()) 改密碼成功! else result=失敗訊息.
-    public OnSorChgPassResultEvent OnSorChgPassResultEvent;
-    /// 下單回覆.
-    public OnSorRequestAckEvent OnSorRequestAckEvent;
-    /// 委託回補, 委託主動回報, 成交回報.
-    public OnSorReportEvent OnSorReportEvent;
-    /// 當 sender 要被殺死前的通知.
-    public OnSorClientDeleteEvent OnSorClientDeleteEvent;
-    #endregion
-
-    #region 連線登入 & 切斷連線
-    /// <summary>
-    /// 建立與SORS的連線並登入.
-    /// </summary>
-    /// <param name="connParam">連線參數, 格式: "host:port", host = SORS 主機 ip 或 domain name</param>
-    /// <param name="sysid">登入的系統名稱,由券商指定</param>
-    /// <param name="user">使用者ID</param>
-    /// <param name="pass">使用者密碼</param>
-    public void Connect(string connParam, string sysid, string user, string pass)
+    public Result Disconnect()
     {
-        CSorClient_Connect(ref Impl_, connParam, "SorApiCS", "1.0.0.0", sysid, user, pass);
-    }
-    [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorClient_Connect")]
-    private static extern void CSorClient_Connect(ref TImpl cli, string connParam, string cliApName, string cliApVer, string sysid, string user, string pass);
+        Disconnect(ref Impl_);
 
-    /// <summary>
-    /// 切斷連線.
-    /// </summary>
-    public void Disconnect()
+        return Result.Success;
+    }
+
+    public IReadOnlyCollection<Acc> GetAccounts() => _accountManager.Values.AsReadOnly();
+
+    private SorTaskResult GetSignInResult() => new(GetSignInResult(ref Impl_));
+
+    public bool SendSorRequest(uint messageCode, string request)
     {
-        CSorClient_Disconnect(ref Impl_);
+        var isSuccess = SendRequest(ref Impl_, messageCode, request, (uint)request.Length);
+
+        if (!isSuccess)
+        {
+            Console.WriteLine("SendSorRequest failed");
+        }
+
+        return isSuccess;
     }
-    [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorClient_Disconnect")]
-    private static extern void CSorClient_Disconnect(ref TImpl cli);
-    #endregion
 
-    #region Get State & Result
-    /// <summary>
-    /// 取得現在的狀態.
-    /// </summary>
-    public SorClientState State { get { return CSorClient_State(ref Impl_); } }
-    [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorClient_State")]
-    private static extern SorClientState CSorClient_State(ref TImpl cli);
-
-    /// <summary>
-    /// 是否已與SORS建立連線, 取得SORS服務端名稱 (包含已登入 or 登入失敗).
-    /// </summary>
-    public bool IsSessionConnected { get { return CSorClient_IsSessionConnected(ref Impl_); } }
-    [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorClient_IsSessionConnected")]
-    [return: MarshalAs(UnmanagedType.I1)]
-    private static extern bool CSorClient_IsSessionConnected(ref TImpl cli);
-
-    /// <summary>
-    /// 取得登入結果.
-    /// </summary>
-    public SorTaskResult SgnResult { get { return new SorTaskResult(CSorClient_SgnResult(ref Impl_)); } }
-    [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorClient_SgnResult")]
-    private static extern TImpl CSorClient_SgnResult(ref TImpl cli);
-    #endregion
-
-    #region Send Request
-    /// <summary>
-    /// 送出SORS要求訊息.
-    /// reqCtx裡面不可有中文,因為在取 reqCtx.Length 時, .NET裡面一個中文字長度=1, 但ASCII(big5)中文字長度=2
-    /// </summary>
-    /// <param name="msgCode">0x81=下單要求, 0x83=回補要求, 0x84=無流量管制時的無ACK下單要求</param>
-    /// <param name="reqCtx">要送出的下單要求內容,前5碼必須保留給header</param>
-    /// <returns>true成功送出,false=無法送出(例如:0x80查詢超過流量上限)</returns>
-    public bool SendSorRequest(uint msgCode, string reqCtx)
+    void OnSorUnknownMsgCodeCallback(ref TImpl sender, IntPtr userData, uint msgCode, IntPtr pkptr, uint pksz)
     {
-        return CSorClient_SendSorRequest(ref Impl_, msgCode, reqCtx, (uint)reqCtx.Length);
+        Console.WriteLine("\n[OnSorUnknownMsgCodeCallback]");
     }
-    [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorClient_SendSorRequest")]
-    [return: MarshalAs(UnmanagedType.I1)]
-    private static extern bool CSorClient_SendSorRequest(ref TImpl cli, uint msgCode, string reqCtx, uint reqLen);
 
-    /// <summary>
-    /// <summary>
-    /// 改密碼, 必須先建立連線才能改密碼: State >= ConnectState.Connected || SignonError.
-    /// </summary>
-    /// <returns>若 State >= ConnectState.Connected 則傳回 true, 否則傳回 false 無法進行改密碼操作</returns>
-    public bool ChgPass(string user, string oldpass, string newpass)
+    void OnSorConnectCallback(ref TImpl sender, IntPtr userData, string errorMessage)
     {
-        return CSorClient_ChgPass(ref Impl_, user, oldpass, newpass);
+        Console.WriteLine("\n[OnSorConnectCallback]");
+        Console.WriteLine($"State = {State}");
     }
-    [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorClient_ChgPass")]
-    [return: MarshalAs(UnmanagedType.I1)]
-    private static extern bool CSorClient_ChgPass(ref TImpl cli, string user, string oldpass, string newpass);
-    #endregion
+
+    void OnSorApReadyCallback(ref TImpl sender, IntPtr userData)
+    {
+        Console.WriteLine("\n[OnSorApReadyCallback]");
+        Console.WriteLine($"State = {State}");
+
+        var result = GetSignInResult();
+
+        LoadAccounts(result);
+        SetRateLimit();
+        LoadTables(result);
+        RecoverExecutions();
+    }
+
+    void OnSorTaskResultCallback(ref TImpl sender, IntPtr userData, ref TImpl taskResult)
+    {
+        Console.WriteLine("\n[OnSorTaskResultCallback]");
+    }
+
+    void OnSorRequestAckCallback(ref TImpl sender, IntPtr userData, uint msgCode, string result)
+    {
+        Console.WriteLine("\n[OnSorRequestAckCallback]");
+    }
+
+    void OnSorReportCallback(ref TImpl sender, IntPtr userData, string result)
+    {
+        Console.WriteLine("\n[OnSorReportCallback]");
+    }
+
+    private void LoadAccounts(SorTaskResult signInResult)
+    {
+        var headTable = signInResult.NameTable("head");
+        var modTable = signInResult.NameTable("mod");
+        var accountsTable = signInResult.NameTable("Accs");
+        var recordsTable = signInResult.NameTable("records");
+
+        int.TryParse(
+            modTable.RecordField(0, (headTable.IsInvalid ? modTable : headTable).Fields.NameField("sgnact")),
+            out int signInAct);
+
+        _accountManager.SorTableParser(
+            accountsTable.IsInvalid ? recordsTable : accountsTable,
+            SorApi.Dll.Certificate,
+            signInAct);
+
+        Console.WriteLine($"Accounts = {_accountManager.Count}");
+    }
+
+    private void SetRateLimit()
+    {
+        //             table = sgnResult.NameTable("FlowCtrl");
+        //             SorFields fields = table.Fields;
+        //             TIndex rate = 0;
+        //             TIndex rateMS = 0;
+        //             string fldRate = table.RecordField(0, fields.NameField("ORate"));
+        //             string fldRateMS = table.RecordField(0, fields.NameField("ORateMS"));
+        //             if (fldRate != null && fldRateMS != null)
+        //             {
+        //                 TIndex.TryParse(fldRate, out rate);
+        //                 TIndex.TryParse(fldRateMS, out rateMS);
+        //             }
+        //             SorFlowSender_.SetFlowCtrl(rate, rateMS);
+        //             if (rate <= 0 || rateMS <= 0)
+        //                 Console.WriteLine("User : {0}, 無流量管制參數", User);
+        //             else
+        //                 Console.WriteLine("User : {0}, 流量管制參數: {0}筆 / 每{1}{2}"
+        //                                                , User
+        //                                                , rate
+        //                                                , rateMS >= 1000 ? (rateMS / 1000.0) : rateMS
+        //                                                , rateMS >= 1000 ? "秒" : "ms");
+    }
+
+    private void LoadTables(SorTaskResult signInResult)
+    {
+        _tableManager.ParseSgnResult(signInResult);
+    }
+
+    // 回補委託: 回補全部(「,D」 = 包含成交明細) (SendSorRequest() 必須保留前5碼).
+    // "-----1"                 回補全部，不包含成交明細
+    // "-----1" + "\x01" + "D"  補全部委託,含成交明細
+    // "-----1" + "\x01" + "Dw" 回補全部有剩餘量，並包含成交明細
+    // "-----1" + "\x01" + "M"  補有成交(或UserID相同)的委託,含成交明細
+    // "-----1" + "\x01" + "m"  補有成交(或UserID相同)的委託,不含成交明細
+    // "-----1" + "\x01" + "M0" 僅補有成交(不考慮UserID)的委託,含成交明細
+    // "-----1" + "\x01" + "m0" 僅補有成交(不考慮UserID)的委託,不含成交明細]
+    // "-----2" + "\x01" + "YYYYMMDDHHMMSS,D"  指定時間，包含成交明細
+    // "-----2" + "\x01" + "YYYYMMDDHHMMSS,Dw" 指定時間有剩餘量，包含成交明細
+    // "-----2" + "\x01" + "YYYYMMDDHHMMSS,m"  指定時間，僅回補有成交, 不包含成交明細
+    // "-----2" + "\x01" + "YYYYMMDDHHMMSS,M"  指定時間，僅回補有成交, 並包含成交明細
+    // "-----0"                 不回補,且不收任何回報
+    // "-----0m"                不回補、且不收委託回報，僅收成交回報
+    private void RecoverExecutions()
+    {
+        var isSuccess = SendSorRequest(0x83, "-----1" + "\x01" + "D");
+
+        if (!isSuccess)
+        {
+            Console.WriteLine("RecoverExecutions failed");
+        }
+    }
 }
