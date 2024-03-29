@@ -18,12 +18,12 @@ public sealed partial class SorClient : IDisposable
 
     public SorClient(bool isEventOnMessageLoop = false)
     {
-        Callbacks_.OnSorUnknownMsgCodeCallback = OnSorUnknownMsgCodeCallback;
-        Callbacks_.OnSorConnectCallback = OnSorConnectCallback;
-        Callbacks_.OnSorApReadyCallback = OnSorApReadyCallback;
-        Callbacks_.OnSorTaskResultCallback = OnSorTaskResultCallback;
-        Callbacks_.OnSorRequestAckCallback = OnSorRequestAckCallback;
-        Callbacks_.OnSorReportCallback = OnSorReportCallback;
+        Callbacks_.OnSorUnknownMsgCodeCallback = HandleUnknownMessageCode;
+        Callbacks_.OnSorConnectCallback = HandleConnect;
+        Callbacks_.OnSorApReadyCallback = HandleApReady;
+        Callbacks_.OnSorTaskResultCallback = HandleTaskResult;
+        Callbacks_.OnSorRequestAckCallback = HandleRequestAck;
+        Callbacks_.OnSorReportCallback = HandleReport;
         // Callbacks_.OnSorClientDeleteCallback = null;
 
         Impl_ = isEventOnMessageLoop ?
@@ -74,18 +74,18 @@ public sealed partial class SorClient : IDisposable
         return isSuccess;
     }
 
-    void OnSorUnknownMsgCodeCallback(ref TImpl sender, IntPtr userData, uint msgCode, IntPtr pkptr, uint pksz)
+    void HandleUnknownMessageCode(ref TImpl sender, IntPtr userData, uint msgCode, IntPtr pkptr, uint pksz)
     {
         Console.WriteLine("\n[OnSorUnknownMsgCodeCallback]");
     }
 
-    void OnSorConnectCallback(ref TImpl sender, IntPtr userData, string errorMessage)
+    void HandleConnect(ref TImpl sender, IntPtr userData, string errorMessage)
     {
         Console.WriteLine("\n[OnSorConnectCallback]");
         Console.WriteLine($"State = {State}");
     }
 
-    void OnSorApReadyCallback(ref TImpl sender, IntPtr userData)
+    void HandleApReady(ref TImpl sender, IntPtr userData)
     {
         Console.WriteLine("\n[OnSorApReadyCallback]");
         Console.WriteLine($"State = {State}");
@@ -98,17 +98,17 @@ public sealed partial class SorClient : IDisposable
         RecoverExecutions();
     }
 
-    void OnSorTaskResultCallback(ref TImpl sender, IntPtr userData, ref TImpl taskResult)
+    void HandleTaskResult(ref TImpl sender, IntPtr userData, ref TImpl taskResult)
     {
         Console.WriteLine("\n[OnSorTaskResultCallback]");
     }
 
-    void OnSorRequestAckCallback(ref TImpl sender, IntPtr userData, uint msgCode, string result)
+    void HandleRequestAck(ref TImpl sender, IntPtr userData, uint msgCode, string result)
     {
         Console.WriteLine("\n[OnSorRequestAckCallback]");
     }
 
-    void OnSorReportCallback(ref TImpl sender, IntPtr userData, string result)
+    void HandleReport(ref TImpl sender, IntPtr userData, string result)
     {
         Console.WriteLine("\n[OnSorReportCallback]");
     }
