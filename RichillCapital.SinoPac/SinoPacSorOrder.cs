@@ -1,19 +1,14 @@
-namespace SorApi;
+namespace RichillCapital.SinoPac.Sor;
 
-using TIndex = UInt32;
-
-/// <summary>
-/// 一筆委託內容.
-/// </summary>
 public class SinoPacSorOrder
 {
     OrdTable Table_;
     string[] SorValues_;
     List<string[]> DealDetails_ = new List<string[]>();
-    SorApi.Acc Acc_;
+    Acc Acc_;
 
     /// 利用委託欄位 SorValues_ 取得此筆委託的帳號.
-    void RegetAcc(SorApi.Accs accs)
+    void RegetAcc(Accs accs)
     {
         if (accs == null)
             return;
@@ -35,7 +30,7 @@ public class SinoPacSorOrder
     /// <summary>
     /// 建構.
     /// </summary>
-    public SinoPacSorOrder(OrdTable table, string[] values, SorApi.Accs accs)
+    public SinoPacSorOrder(OrdTable table, string[] values, Accs accs)
     {
         Table_ = table;
         if (values == null)
@@ -65,7 +60,7 @@ public class SinoPacSorOrder
     {
         get
         {
-            TIndex index = Table.SorTable.Fields.NameFieldIndex(fieldName);
+            uint index = Table.SorTable.Fields.NameFieldIndex(fieldName);
             if (index == SorField.InvalidIndex || index >= SorValues_.Length)
                 return null;
             return SorValues_[index];
@@ -75,17 +70,17 @@ public class SinoPacSorOrder
     /// <summary>
     /// 回報更新委託內容, 如果是成交回報,則可能會加入成交明細表.
     /// </summary>
-    public void SetRptFields(RptTable rptTable, string[] rptFlds, SorApi.Accs accs)
+    public void SetRptFields(RptTable rptTable, string[] rptFlds, Accs accs)
     {
         SorTable sorTable;
         SorField field;
         string value;
-        TIndex index;
+        uint index;
 
         if (rptFlds != null)
         {
             sorTable = rptTable.SorTable;
-            for (TIndex i = 0; i < sorTable.Fields.Count; i++)
+            for (uint i = 0; i < sorTable.Fields.Count; i++)
             {
                 field = rptTable.SorTable.Fields.IndexField(i);
                 value = rptFlds[i];
@@ -95,12 +90,12 @@ public class SinoPacSorOrder
             }
         }
 
-        TIndex[] ddsidxs = rptTable.GetDDSFromRpt(Table_);
+        uint[] ddsidxs = rptTable.GetDDSFromRpt(Table_);
         if (ddsidxs != null)
         {
             string[] dealValues = new string[ddsidxs.Length];
             int idds = 0;
-            foreach (TIndex irpt in ddsidxs)
+            foreach (uint irpt in ddsidxs)
             {
                 if (irpt < rptFlds.Length)
                     dealValues[idds] = rptFlds[irpt];
@@ -154,96 +149,5 @@ public class SinoPacSorOrder
     /// <summary>
     /// 此委託所屬的可用帳號.
     /// </summary>
-    public SorApi.Acc Acc { get { return Acc_; } }
-}
-
-/// <summary>
-/// 委託管理表.
-/// </summary>
-public class OrdsTable
-{
-    /// <summary>
-    /// 用 SorRID 索引 SorOrd.
-    /// </summary>
-    SortedList<string, int> SorOrds_ = new SortedList<string, int>();
-    /// <summary>
-    /// 依加入順序儲存的委託列表.
-    /// </summary>
-    List<SinoPacSorOrder> SorOrdsList_ = new List<SinoPacSorOrder>();
-
-    /// <summary>
-    /// 清除全部委託資料.
-    /// </summary>
-    public void Clear()
-    {
-        SorOrds_.Clear();
-        SorOrdsList_.Clear();
-    }
-
-    /// <summary>
-    /// 使用委託Key = OrdSorRID, 取得委託書.
-    /// </summary>
-    public SinoPacSorOrder SorOrdAtKey(string orgSorRID)
-    {
-        int listIndex;
-        if (!SorOrds_.TryGetValue(orgSorRID, out listIndex))
-            return null;
-        SinoPacSorOrder ord = SorOrdsList_[listIndex];
-        return ord;
-    }
-    /// <summary>
-    /// 增加一筆新委託書 or 若已存在則更新.
-    /// </summary>
-    public SinoPacSorOrder AddSorOrd(OrdTable ordTable, string orgSorRID, string[] flds, SorApi.Accs accs)
-    {
-        SinoPacSorOrder ord;
-        int listIndex;
-        if (SorOrds_.TryGetValue(orgSorRID, out listIndex))
-        {
-            ord = SorOrdsList_[listIndex];
-            ord.SetSorOrdFields(flds);
-        }
-        else
-        {
-            ord = new SinoPacSorOrder(ordTable, flds, accs);
-            SorOrds_.Add(orgSorRID, SorOrdsList_.Count);
-            SorOrdsList_.Add(ord);
-        }
-        return ord;
-    }
-    /// <summary>
-    /// 增加or更新一筆新委託書, 傳回: true=新增, false=更新.
-    /// </summary>
-    public bool AddOrUpdateOrder(string orgSorRID, SinoPacSorOrder ord)
-    {
-        int listIndex;
-
-        if (SorOrds_.TryGetValue(orgSorRID, out listIndex))
-        {
-            SorOrdsList_[listIndex] = ord;
-            return false;
-        }
-        
-        SorOrds_.Add(orgSorRID, listIndex = SorOrdsList_.Count);
-        
-        SorOrdsList_.Add(ord);
-        
-        return true;
-    }
-    /// <summary>
-    /// 增加or更新一筆新委託書, 傳回: true=新增, false=更新.
-    /// </summary>
-    public bool AddSorOrd(SinoPacSorOrder ord)
-    {
-        return AddOrUpdateOrder(ord.OrgSorRID, ord);
-    }
-    
-    /// <summary>
-    /// 取得委託筆數.
-    /// </summary>
-    public int Count { get { return SorOrdsList_.Count; } }
-    /// <summary>
-    /// 取得委託列表.
-    /// </summary>
-    public List<SinoPacSorOrder> OrdsList { get { return SorOrdsList_; } }
+    public Acc Acc { get { return Acc_; } }
 }
