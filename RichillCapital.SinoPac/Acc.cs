@@ -122,4 +122,6 @@ public class Acc
             return true;
         return DigSgnHandler_.MakeDigSgn(ref msg, iDigSgnAtMsgPos);
     }
+
+    public bool IsSubAccount() => !string.IsNullOrEmpty(SubacNo);
 }

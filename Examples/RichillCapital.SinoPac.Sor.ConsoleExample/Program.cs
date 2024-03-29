@@ -14,7 +14,8 @@ if (firstAccount is null)
     return;
 }
 
-
+client.QueryAccountBalance(firstAccount);
+await Wait();
 
 client.Disconnect();
 await Wait();

@@ -11,8 +11,9 @@ public sealed partial class SorClient : IDisposable
 
     SorClientDelegates Callbacks_ = new();
 
-    TablesMgr _tableManager = new();
-    Accs _accountManager = new();
+    private readonly QueryId _queryId = new();
+    private readonly Accs _accountManager = new();
+    private readonly TablesMgr _tableManager = new();
 
     public event EventHandler<SorStateChangedEvent>? StateChanged;
 
@@ -60,9 +61,32 @@ public sealed partial class SorClient : IDisposable
 
     public IReadOnlyCollection<Acc> GetAccounts() => _accountManager.Values.AsReadOnly();
 
+    public void QueryAccountBalance(Acc sorAccount, string currencyCode = "NTX")
+    {
+        var taskId = "QBal";
+
+        var parameters = new Dictionary<string, string>
+        {
+            { "bkno", sorAccount.BrkNo},
+            { "ivac", sorAccount.IvacNo},
+            { "MCODE", currencyCode }
+        };
+
+        if (sorAccount.IsSubAccount())
+        {
+            parameters.Add("subac", sorAccount.SubacNo);
+        }
+
+        var sep = '\x01';
+        var request = $"-----{_queryId.Next()}{sep}{taskId}{sep}{parameters
+            .Select(p => $"{p.Key}={p.Value}")}";
+
+        SendRequest(0x80, request);
+    }
+
     private SorTaskResult GetSignInResult() => new(GetSignInResult(ref Impl_));
 
-    public bool SendSorRequest(uint messageCode, string request)
+    public bool SendRequest(uint messageCode, string request)
     {
         var isSuccess = SendRequest(ref Impl_, messageCode, request, (uint)request.Length);
 
@@ -129,7 +153,12 @@ public sealed partial class SorClient : IDisposable
             SorApi.Dll.Certificate,
             signInAct);
 
-        Console.WriteLine($"Accounts = {_accountManager.Count}");
+        var accounts = _accountManager.Values;
+
+        foreach (var acc in accounts)
+        {
+            Console.WriteLine($"{acc.Key}");
+        }
     }
 
     private void SetRateLimit()
@@ -177,7 +206,7 @@ public sealed partial class SorClient : IDisposable
     // "-----0m"                不回補、且不收委託回報，僅收成交回報
     private void RecoverExecutions()
     {
-        var isSuccess = SendSorRequest(0x83, "-----1" + "\x01" + "D");
+        var isSuccess = SendRequest(0x83, "-----1" + "\x01" + "D");
 
         if (!isSuccess)
         {
