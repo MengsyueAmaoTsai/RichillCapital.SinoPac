@@ -14,7 +14,7 @@ class SorFlowCtrlSender : IDisposable
     /// <param name="owner"></param>
     public SorFlowCtrlSender(SorClient owner)
     {
-        Impl_ = CSorFlowCtrlSender_Create(ref owner.Impl_);
+        Impl_ = CSorFlowCtrlSender_Create(ref owner.Client);
     }
     [DllImport(SorApi.Dll.SorClient, EntryPoint = "CSorFlowCtrlSender_Create")]
     private static extern TImpl CSorFlowCtrlSender_Create(ref TImpl gcliImpl);

@@ -8,9 +8,9 @@ namespace RichillCapital.SinoPac.Sor;
 
 public sealed partial class SorClient : IDisposable
 {
-    internal TImpl Impl_;
+    internal TImpl Client;
 
-    SorClientDelegates Callbacks_ = new();
+    SorClientDelegates Delegates = new();
 
     private readonly QueryId _queryId = new();
     private readonly AccountManager _accountManager = new();
@@ -20,28 +20,28 @@ public sealed partial class SorClient : IDisposable
 
     public SorClient(bool isEventOnMessageLoop = false)
     {
-        Callbacks_.OnUnknownMessageCode = HandleUnknownMessageCode;
-        Callbacks_.OnConnect = HandleConnect;
-        Callbacks_.OnApReady = HandleApReady;
-        Callbacks_.OnTaskResult = HandleTaskResult;
-        Callbacks_.OnRequestAck = HandleRequestAck;
-        Callbacks_.OnReport = HandleReport;
+        Delegates.OnUnknownMessageCode = HandleUnknownMessageCode;
+        Delegates.OnConnect = HandleConnect;
+        Delegates.OnApReady = HandleApReady;
+        Delegates.OnTaskResult = HandleTaskResult;
+        Delegates.OnRequestAck = HandleRequestAck;
+        Delegates.OnReport = HandleReport;
 
-        Impl_ = isEventOnMessageLoop ?
-            CreateOnMessageLoop(ref Callbacks_, IntPtr.Zero) :
-            Create(ref Callbacks_, IntPtr.Zero);
+        Client = isEventOnMessageLoop ?
+            CreateOnMessageLoop(ref Delegates, IntPtr.Zero) :
+            Create(ref Delegates, IntPtr.Zero);
     }
 
-    public SorClientState State => GetClientState(ref Impl_);
+    public SorClientState State => GetClientState(ref Client);
 
-    public bool IsConnected => IsSessionConnected(ref Impl_);
+    public bool IsConnected => IsSessionConnected(ref Client);
 
-    public void Dispose() => Delete(ref Impl_);
+    public void Dispose() => Delete(ref Client);
 
     public Result Connect(string userId, string password)
     {
         Connect(
-            ref Impl_,
+            ref Client,
             SorApi.DefaultHost,
             "SorApiCS",
             SorApi.Version,
@@ -54,7 +54,7 @@ public sealed partial class SorClient : IDisposable
 
     public Result Disconnect()
     {
-        Disconnect(ref Impl_);
+        Disconnect(ref Client);
 
         return Result.Success;
     }
@@ -119,7 +119,7 @@ public sealed partial class SorClient : IDisposable
         return SendRequest(0x80, request);
     }
 
-    private TaskResult GetSignInResult() => new(GetSignInResult(ref Impl_));
+    private TaskResult GetSignInResult() => new(GetSignInResult(ref Client));
 
     public Result SendRequest(uint messageCode, string request)
     {
@@ -131,7 +131,7 @@ public sealed partial class SorClient : IDisposable
                 .ToResult();
         }
 
-        if (!SendRequest(ref Impl_, messageCode, request, (uint)request.Length))
+        if (!SendRequest(ref Client, messageCode, request, (uint)request.Length))
         {
             return Error
                 .Invalid("Failed to send request.")
